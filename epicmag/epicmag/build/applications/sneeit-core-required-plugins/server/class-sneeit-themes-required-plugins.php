@@ -9,11 +9,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 // dev-reply#242.
-if( ! class_exists( 'Sneeit_Themes_Required_Plugin_Installer' ) ) {
+if( ! class_exists( 'Sneeit_Themes_Required_Plugins' ) ) {
 /**
 	 * Check class-def#244
 	 */
-	class Sneeit_Themes_Required_Plugin_Installer {
+	class Sneeit_Themes_Required_Plugins {
 		public $remain = array();
 		public $checker = 'sneeit_update_checker';
 		public $admin_slug = 'sneeit-core';
@@ -132,14 +132,14 @@ if( ! class_exists( 'Sneeit_Themes_Required_Plugin_Installer' ) ) {
 		 * Check Documentation#24110
 		 */
 		public function add_submenu_page() {
-			echo '<div class="app ' . $this->sub_slug . '"></div>';
+			echo '<div class="app ' . esc_attr( $this->sub_slug ) . '"></div>';
 		}
 		/**
 		 * Check Documentation#24114
 		 */
 		public function admin_notices() {
 			if ( ! empty( $_GET['page'] ) ) {
-				$epicmag_11 = $_GET['page'];
+				$epicmag_11 = sanitize_text_field( wp_unslash( $_GET['page'] ) );
 				// dev-reply#24175.
 				if ( ( $epicmag_11 ) === $this->sub_slug ) {
 					return;
@@ -151,14 +151,14 @@ if( ! class_exists( 'Sneeit_Themes_Required_Plugin_Installer' ) ) {
 			echo '<section><div class="notice notice-large notice-warning is-dismissible">';
 			echo '<h2 class="notice-title">';
 			/* translators: see trans-note#24128 */
-			echo sprintf( esc_html__( 'Missing required plugins for %s theme', 'epicmag' ), $this->theme_name );
+			echo sprintf( esc_html__( 'Missing required plugins for %s theme', 'epicmag' ), esc_html( $this->theme_name ) );
 			echo '</h2>';
 			echo '<p>';
 			/* translators: see trans-note#24131 */
-			echo sprintf( esc_html__( '%s requires following plugins to work: ', 'epicmag' ), $this->theme_name ) . '<strong>' . $epicmag_14 . '</strong>';
+			echo sprintf( esc_html__( '%s requires following plugins to work: ', 'epicmag' ), esc_html( $this->theme_name ) ) . '<strong>' . esc_html( $epicmag_14 ) . '</strong>';
 			echo '</p>';
 			echo '<p>';
-			echo '<a class="button button-large button-primary" href="' . menu_page_url( $this->sub_slug, false ) . '">';
+			echo '<a class="button button-large button-primary" href="' . esc_attr( menu_page_url( esc_attr( $this->sub_slug ), false ) ) . '">';
 			echo esc_html__( 'Please Install and Activate', 'epicmag' );
 			echo '</a>';
 			echo '</p>';
@@ -172,7 +172,7 @@ if( ! class_exists( 'Sneeit_Themes_Required_Plugin_Installer' ) ) {
 				return;
 			}
 			// dev-reply#24209.
-			$epicmag_11 = $_GET['page'];
+			$epicmag_11 = sanitize_text_field( wp_unslash( $_GET['page'] ) );
 			if ( ( $epicmag_11 ) !== $this->sub_slug ) {
 				return;
 			}
@@ -235,7 +235,7 @@ if( ! class_exists( 'Sneeit_Themes_Required_Plugin_Installer' ) ) {
 			if ( empty( $_POST['nonce'] ) ) {
 				$this->ajax_error_die( esc_html__( 'empty nonce', 'epicmag' ) );
 			}
-			if ( ! wp_verify_nonce( $_POST['nonce'], $this->sub_slug ) ) {
+			if ( ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['nonce'] ) ), $this->sub_slug ) ) {
 				$this->ajax_error_die( esc_html__( 'Timeout! Please reload the page.', 'epicmag' ) );
 			}
 			if ( is_string( $epicmag_20 ) ) {
@@ -246,7 +246,7 @@ if( ! class_exists( 'Sneeit_Themes_Required_Plugin_Installer' ) ) {
 					$epicmag_21 = trim( $epicmag_21 );
 					if ( empty( $_POST[ $epicmag_21 ] ) ) {
 						/* translators: see trans-note#24207 */
-						$this->ajax_error_die( sprintf( esc_html__( 'Missing required field: %s', $epicmag_21 ) ) );
+						$this->ajax_error_die( sprintf( esc_html__( 'Missing required field: %s', 'epicmag' ), $epicmag_21 ) );
 					}
 				}
 			}
@@ -353,11 +353,11 @@ if( ! class_exists( 'Sneeit_Themes_Required_Plugin_Installer' ) ) {
 		public function installer() {
 			$this->ajax_request_verify_die( 'plugin' );
 			require_once ABSPATH . 'wp-admin/includes/plugin.php';
-			$epicmag_33 = $_POST['plugin'];
-			if ( empty( $this->remain[ $epicmag_33 ] ) ) {
+			$epicmag_33 = sanitize_text_field( wp_unslash( $_POST['plugin'] ) );
+			if ( ! empty( $this->remain[ $epicmag_33 ] ) ) {
 				$this->ajax_finished_die( 'installed' );
 			}
-			// dev-reply#24382.
+			// dev-reply#24383.
 			if ( is_dir( WP_PLUGIN_DIR . '/' . $epicmag_33 ) ) {
 				$epicmag_27 = $this->activate_plugin( $epicmag_33 );
 				if ( is_wp_error( $epicmag_27 ) ) {
@@ -365,7 +365,7 @@ if( ! class_exists( 'Sneeit_Themes_Required_Plugin_Installer' ) ) {
 				}
 				$this->ajax_finished_die( 'installed' );
 			}
-			// dev-reply#24391.
+			// dev-reply#24392.
 			$epicmag_34 = get_template_directory() . '/plugins/' . $epicmag_33 . '.zip';
 			$epicmag_35 = $this->download_unzip_activate_plugin(
 				"https://github.com/tiennguyenvan/wp-plugins-release/raw/main/{$epicmag_33}/{$epicmag_33}.zip",
@@ -375,11 +375,11 @@ if( ! class_exists( 'Sneeit_Themes_Required_Plugin_Installer' ) ) {
 			if ( ! is_wp_error( $epicmag_35 ) ) {
 				$this->ajax_finished_die( 'installed' );
 			}
-			// dev-reply#24403.
+			// dev-reply#24404.
 			if ( file_exists( $epicmag_34 ) && ! is_wp_error( $this->unzip_activate_plugin( $epicmag_34, $epicmag_33 ) ) ) {
 				$this->ajax_finished_die( 'installed' );
 			}
-			// dev-reply#24413.
+			// dev-reply#24414.
 			$epicmag_36 = $this->download_unzip_activate_plugin(
 				"https://downloads.wordpress.org/plugin/{$epicmag_33}.zip",
 				$epicmag_34,
@@ -393,4 +393,4 @@ if( ! class_exists( 'Sneeit_Themes_Required_Plugin_Installer' ) ) {
 		}
 	}
 }
-new Sneeit_Themes_Required_Plugin_Installer();
+new Sneeit_Themes_Required_Plugins();
