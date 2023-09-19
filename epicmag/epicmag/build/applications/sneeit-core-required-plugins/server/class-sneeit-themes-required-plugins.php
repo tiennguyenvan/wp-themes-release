@@ -159,7 +159,7 @@ if( ! class_exists( 'Sneeit_Themes_Required_Plugins' ) ) {
 			echo '</p>';
 			echo '<p>';
 			echo '<a class="button button-large button-primary" href="' . esc_attr( menu_page_url( esc_attr( $this->sub_slug ), false ) ) . '">';
-			echo esc_html__( 'Please Install and Activate', 'epicmag' );
+			echo esc_html__( 'Please Install Required Plugins', 'epicmag' );
 			echo '</a>';
 			echo '</p>';
 			echo '</div></section>';
@@ -199,7 +199,7 @@ if( ! class_exists( 'Sneeit_Themes_Required_Plugins' ) ) {
 				'text' => array(
 					'finished' => esc_html__( 'Finished', 'epicmag' ),
 					'title' => esc_html__( 'Required Plugins for ', 'epicmag' ) . $this->theme_name,
-					'button' => esc_html__( 'Install and Activate', 'epicmag' ),
+					'button' => esc_html__( 'Install Required Plugins', 'epicmag' ),
 					'redirecting' => esc_html__( 'Redirecting ...', 'epicmag' ),
 					'error' => esc_html__( 'WordPress Server Error', 'epicmag' ),
 					'label' => esc_html__( 'Required Plugins', 'epicmag' )
