@@ -13,32 +13,112 @@
         font-family: 'Times New Roman', Times, serif;
     }
 
+    body .is-layout-constrained>ul.alignwide {
+        max-width: none !important;
+    }
+
+    .wp-block-site-title {
+        bottom: -30px;
+        position: relative;
+        z-index: 999;
+    }
+
     .wp-block-site-title a {
         text-decoration: none !important;
     }
+
     .wp-block-social-links {
         gap: 30px;
     }
+
     .wp-block-post-author__avatar img {
         width: 32px;
         height: 32px;
         border-radius: 100%;
     }
+
     .wp-block-post-author__content {
         display: flex;
         align-items: center;
     }
+
     .wp-block-query .wp-block-post-title {
         margin: 0 0 0.5em 0;
     }
+
     .wp-block-query .wp-block-post-title a {
         text-decoration: none;
-        color: inherit!important;
+        color: inherit !important;
     }
+
     .wp-block-query time a {
         text-decoration: none;
         color: #000000;
         opacity: 0.6;
+    }
+
+    .single-post-header {
+        position: relative;
+        overflow: hidden;
+        max-height: 70vh
+    }
+
+    .single-post-header .wp-block-post-featured-image {
+        display: block;
+        margin: 0;
+        opacity: 0.4
+    }
+
+    .single-post-header-info {
+        position: absolute;
+        bottom: 70px;
+        left: auto;
+        right: auto;
+        width: 100%;
+        color: white;
+        max-width: none !important;
+    }
+
+    .wp-block-post-terms a {
+        text-decoration: none;
+        color: black
+    }
+
+    blockquote.wp-block-quote {
+        border-left: 2px solid;
+        margin: 0;
+        background: #00000006;
+        padding: 5px 2em;
+    }
+
+    .wp-block-comment-author-name a {
+        text-decoration: none;
+        font-weight: bold;
+        color: black;
+        font-size: 14px;
+        margin: 0 0 3px 0;
+        display: inline-block;
+    }
+
+    .wp-block-comment-date time a {
+        text-decoration: none;
+        color: #aaa;
+    }
+
+    .comment .wp-block-avatar img {
+        border-radius: 50px !important;
+        background: #f0f0f0;
+        box-shadow: 1px 1px 5px #0003;
+        border: 5px solid white;
+    }
+
+    button.wp-block-search__button.wp-element-button {
+        background-color: transparent !important;
+        padding: 0;
+    }
+
+    form.wp-block-search__button-only.wp-block-search__button-behavior-expand.wp-block-search label {
+        display: none !important;
     }
 </style>
 
@@ -62,7 +142,7 @@
 
                 <!-- wp:button {"style":{"border":{"width":"0px","style":"none"}},"className":"is-style-outline"} -->
                 <div class="wp-block-button is-style-outline"><a class="wp-block-button__link wp-element-button"
-                        href="/sample-page/" style="border-style:none;border-width:0px">Sample Page</a></div>
+                        href="/?page_id=2" style="border-style:none;border-width:0px">Sample Page</a></div>
                 <!-- /wp:button -->
 
                 <!-- wp:button {"style":{"border":{"color":"#000000","width":"1px"},"color":{"background":"#ffffff","text":"#000000"}},"className":"is-style-outline"} -->
@@ -80,13 +160,5 @@
         <!-- /wp:group -->
     </div>
     <!-- /wp:group -->
-
-    <!-- wp:spacer {"height":"30px"} -->
-    <div style="height:30px" aria-hidden="true" class="wp-block-spacer"></div>
-    <!-- /wp:spacer -->
-
-    <!-- wp:spacer {"height":"30px"} -->
-    <div style="height:30px" aria-hidden="true" class="wp-block-spacer"></div>
-    <!-- /wp:spacer -->
 </div>
 <!-- /wp:group -->
