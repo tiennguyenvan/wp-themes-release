@@ -288,27 +288,27 @@ if( ! class_exists( 'Sneeit_Themes_Required_Plugins' ) ) {
 			}
 			// dev-reply#24314.
 			wp_cache_delete( 'plugins', 'plugins' );
-			$epicmag_cstrp_remain = activate_plugin( $epicmag_cstrp_current );
-			if ( is_wp_error( $epicmag_cstrp_remain ) ) {
+			$epicmag_cstrp_get = activate_plugin( $epicmag_cstrp_current );
+			if ( is_wp_error( $epicmag_cstrp_get ) ) {
 				/* translators: see trans-note#24242 */
-				return new WP_Error( 'epicmag-plugin-installer', sprintf( esc_html__( 'Cannot active "%1$s": file %2$s %3$s', 'epicmag' ), $epicmag_cstrp_redirect, $epicmag_cstrp_current, $epicmag_cstrp_remain->get_error_message() ) );
+				return new WP_Error( 'epicmag-plugin-installer', sprintf( esc_html__( 'Cannot active "%1$s": file %2$s %3$s', 'epicmag' ), $epicmag_cstrp_redirect, $epicmag_cstrp_current, $epicmag_cstrp_get->get_error_message() ) );
 			}
 			return true;
 		}
 		/**
 		 * Check Documentation#24246
 		 *
-		 * @param object|array|string $epicmag_cstrp_get check var-def#24246.
+		 * @param object|array|string $epicmag_cstrp_page check var-def#24246.
 		 * @param object|array|string $epicmag_cstrp_redirect check var-def#24246.
 		 */
-		public function unzip_activate_plugin( $epicmag_cstrp_get, $epicmag_cstrp_redirect ) {
+		public function unzip_activate_plugin( $epicmag_cstrp_page, $epicmag_cstrp_redirect ) {
 			// dev-reply#24329.
 			require_once ABSPATH . '/wp-admin/includes/file.php';
 			WP_Filesystem();
-			$epicmag_cstrp_page = unzip_file( $epicmag_cstrp_get, WP_PLUGIN_DIR );
-			if ( is_wp_error( $epicmag_cstrp_page ) ) {
+			$epicmag_cstrp_keys = unzip_file( $epicmag_cstrp_page, WP_PLUGIN_DIR );
+			if ( is_wp_error( $epicmag_cstrp_keys ) ) {
 				/* translators: see trans-note#24253 */
-				return new WP_Error( 'epicmag-plugin-installer', sprintf( esc_html__( 'Cannot unzip "%1$s": %2$s', 'epicmag' ), $epicmag_cstrp_redirect, $epicmag_cstrp_page->get_error_message() ) );
+				return new WP_Error( 'epicmag-plugin-installer', sprintf( esc_html__( 'Cannot unzip "%1$s": %2$s', 'epicmag' ), $epicmag_cstrp_redirect, $epicmag_cstrp_keys->get_error_message() ) );
 			}
 			if ( ! is_dir( WP_PLUGIN_DIR . '/' . $epicmag_cstrp_redirect ) ) {
 				/* translators: see trans-note#24256 */
@@ -319,33 +319,33 @@ if( ! class_exists( 'Sneeit_Themes_Required_Plugins' ) ) {
 		/**
 		 * Check Documentation#24260
 		 *
-		 * @param object|array|string $epicmag_cstrp_keys check var-def#24260.
-		 * @param object|array|string $epicmag_cstrp_get check var-def#24260.
+		 * @param object|array|string $epicmag_cstrp_capitalized check var-def#24260.
+		 * @param object|array|string $epicmag_cstrp_page check var-def#24260.
 		 * @param object|array|string $epicmag_cstrp_redirect check var-def#24260.
 		 */
-		public function download_unzip_activate_plugin( $epicmag_cstrp_keys, $epicmag_cstrp_get, $epicmag_cstrp_redirect ) {
-			$epicmag_cstrp_capitalized = download_url( $epicmag_cstrp_keys );
-			if ( is_wp_error( $epicmag_cstrp_capitalized ) ) {
+		public function download_unzip_activate_plugin( $epicmag_cstrp_capitalized, $epicmag_cstrp_page, $epicmag_cstrp_redirect ) {
+			$epicmag_cstrp_imploded = download_url( $epicmag_cstrp_capitalized );
+			if ( is_wp_error( $epicmag_cstrp_imploded ) ) {
 				/* translators: see trans-note#24264 */
-				return new WP_Error( 'epicmag-plugin-installer', sprintf( esc_html__( 'Cannot download "%1$s": %2$s', 'epicmag' ), $epicmag_cstrp_keys, $epicmag_cstrp_capitalized->get_error_message() ) );
+				return new WP_Error( 'epicmag-plugin-installer', sprintf( esc_html__( 'Cannot download "%1$s": %2$s', 'epicmag' ), $epicmag_cstrp_capitalized, $epicmag_cstrp_imploded->get_error_message() ) );
 			}
-			$epicmag_cstrp_imploded = dirname( $epicmag_cstrp_get );
+			$epicmag_cstrp_url = dirname( $epicmag_cstrp_page );
 			// dev-reply#24353.
-			if ( ! is_dir( $epicmag_cstrp_imploded ) ) {
+			if ( ! is_dir( $epicmag_cstrp_url ) ) {
 				// dev-reply#24355.
-				if ( ! mkdir( $epicmag_cstrp_imploded, 0777 ) ) {
-					unlink( $epicmag_cstrp_capitalized );
+				if ( ! mkdir( $epicmag_cstrp_url, 0777 ) ) {
+					unlink( $epicmag_cstrp_imploded );
 					/* translators: see trans-note#24272 */
 					return new WP_Error( 'epicmag-plugin-installer', sprintf( esc_html__( 'Cannot create folder of %s', 'epicmag' ), $epicmag_cstrp_redirect ) );
 				}
 			}
 			// dev-reply#24362.
-			if ( ! rename( $epicmag_cstrp_capitalized, $epicmag_cstrp_get ) ) {
-				unlink( $epicmag_cstrp_capitalized );
+			if ( ! rename( $epicmag_cstrp_imploded, $epicmag_cstrp_page ) ) {
+				unlink( $epicmag_cstrp_imploded );
 				/* translators: see trans-note#24278 */
 				return new WP_Error( 'epicmag-plugin-installer', sprintf( esc_html__( 'Cannot upload %s', 'epicmag' ), $epicmag_cstrp_redirect ) );
 			}
-			return $this->unzip_activate_plugin( $epicmag_cstrp_get, $epicmag_cstrp_redirect );
+			return $this->unzip_activate_plugin( $epicmag_cstrp_page, $epicmag_cstrp_redirect );
 		}
 		/**
 		 * Check Documentation#24282
@@ -353,41 +353,41 @@ if( ! class_exists( 'Sneeit_Themes_Required_Plugins' ) ) {
 		public function installer() {
 			$this->ajax_request_verify_die( 'plugin' );
 			require_once ABSPATH . 'wp-admin/includes/plugin.php';
-			$epicmag_cstrp_url = sanitize_text_field( wp_unslash( $_POST['plugin'] ) );
-			if ( ! empty( $this->remain[ $epicmag_cstrp_url ] ) ) {
+			$epicmag_cstrp_build = sanitize_text_field( wp_unslash( $_POST['plugin'] ) );
+			if ( ! empty( $this->remain[ $epicmag_cstrp_build ] ) ) {
 				$this->ajax_finished_die( 'installed' );
 			}
 			// dev-reply#24383.
-			if ( is_dir( WP_PLUGIN_DIR . '/' . $epicmag_cstrp_url ) ) {
-				$epicmag_cstrp_remain = $this->activate_plugin( $epicmag_cstrp_url );
-				if ( is_wp_error( $epicmag_cstrp_remain ) ) {
-					$this->ajax_error_die( $epicmag_cstrp_remain->get_error_message() );
+			if ( is_dir( WP_PLUGIN_DIR . '/' . $epicmag_cstrp_build ) ) {
+				$epicmag_cstrp_get = $this->activate_plugin( $epicmag_cstrp_build );
+				if ( is_wp_error( $epicmag_cstrp_get ) ) {
+					$this->ajax_error_die( $epicmag_cstrp_get->get_error_message() );
 				}
 				$this->ajax_finished_die( 'installed' );
 			}
 			// dev-reply#24392.
-			$epicmag_cstrp_build = get_template_directory() . '/plugins/' . $epicmag_cstrp_url . '.zip';
-			$epicmag_cstrp_dir = $this->download_unzip_activate_plugin(
-				"https://github.com/tiennguyenvan/wp-plugins-release/raw/main/{$epicmag_cstrp_url}/{$epicmag_cstrp_url}.zip",
-				$epicmag_cstrp_build,
-				$epicmag_cstrp_url
+			$epicmag_cstrp_dir = get_template_directory() . '/plugins/' . $epicmag_cstrp_build . '.zip';
+			$epicmag_cstrp_asset = $this->download_unzip_activate_plugin(
+				"https://github.com/tiennguyenvan/wp-plugins-release/raw/main/{$epicmag_cstrp_build}/{$epicmag_cstrp_build}.zip",
+				$epicmag_cstrp_dir,
+				$epicmag_cstrp_build
 			);
-			if ( ! is_wp_error( $epicmag_cstrp_dir ) ) {
+			if ( ! is_wp_error( $epicmag_cstrp_asset ) ) {
 				$this->ajax_finished_die( 'installed' );
 			}
 			// dev-reply#24404.
-			if ( file_exists( $epicmag_cstrp_build ) && ! is_wp_error( $this->unzip_activate_plugin( $epicmag_cstrp_build, $epicmag_cstrp_url ) ) ) {
+			if ( file_exists( $epicmag_cstrp_dir ) && ! is_wp_error( $this->unzip_activate_plugin( $epicmag_cstrp_dir, $epicmag_cstrp_build ) ) ) {
 				$this->ajax_finished_die( 'installed' );
 			}
 			// dev-reply#24414.
-			$epicmag_cstrp_asset = $this->download_unzip_activate_plugin(
-				"https://downloads.wordpress.org/plugin/{$epicmag_cstrp_url}.zip",
-				$epicmag_cstrp_build,
-				$epicmag_cstrp_url
+			$epicmag_cstrp_path = $this->download_unzip_activate_plugin(
+				"https://downloads.wordpress.org/plugin/{$epicmag_cstrp_build}.zip",
+				$epicmag_cstrp_dir,
+				$epicmag_cstrp_build
 			);
-			if ( is_wp_error( $epicmag_cstrp_asset ) ) {
+			if ( is_wp_error( $epicmag_cstrp_path ) ) {
 				/* translators: see trans-note#24319 */
-				$this->ajax_error_die( sprintf( esc_html__( 'Cannot install "%1$s": %2$s', 'epicmag' ), $epicmag_cstrp_url, $epicmag_cstrp_asset->get_error_message() ) );
+				$this->ajax_error_die( sprintf( esc_html__( 'Cannot install "%1$s": %2$s', 'epicmag' ), $epicmag_cstrp_build, $epicmag_cstrp_path->get_error_message() ) );
 			}
 			$this->ajax_finished_die( 'installed' );
 		}
