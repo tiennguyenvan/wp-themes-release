@@ -361,14 +361,14 @@ if( ! class_exists( 'Sneeit_Themes_Required_Plugins' ) ) {
 				$this->ajax_finished_die( 'installed' );
 			}
 			// dev-reply#24388.
-			if ( is_dir( WP_PLUGIN_DIR . '/' . $epicmag_cstrp_build ) ) {
+			if ( is_dir( WP_PLUGIN_DIR . '/' . $epicmag_cstrp_build ) && $this->plugin_install_file( $epicmag_cstrp_redirect ) ) {
 				$epicmag_cstrp_get = $this->activate_plugin( $epicmag_cstrp_build );
 				if ( is_wp_error( $epicmag_cstrp_get ) ) {
-					$this->ajax_error_die( $epicmag_cstrp_get->get_error_message() );
+					$this->ajax_error_die( 'error 1: ' . $epicmag_cstrp_get->get_error_message() );
 				}
 				$this->ajax_finished_die( 'installed' );
 			}
-			// dev-reply#24397.
+			// dev-reply#24398.
 			$epicmag_cstrp_dir = get_template_directory() . '/plugins/' . $epicmag_cstrp_build . '.zip';
 			$epicmag_cstrp_asset = $this->download_unzip_activate_plugin(
 				"https://github.com/tiennguyenvan/wp-plugins-release/raw/main/{$epicmag_cstrp_build}/{$epicmag_cstrp_build}.zip",
@@ -382,7 +382,7 @@ if( ! class_exists( 'Sneeit_Themes_Required_Plugins' ) ) {
 			if ( file_exists( $epicmag_cstrp_dir ) && ! is_wp_error( $this->unzip_activate_plugin( $epicmag_cstrp_dir, $epicmag_cstrp_build ) ) ) {
 				$this->ajax_finished_die( 'installed' );
 			}
-			// dev-reply#24419.
+			// dev-reply#24423.
 			$epicmag_cstrp_path = $this->download_unzip_activate_plugin(
 				"https://downloads.wordpress.org/plugin/{$epicmag_cstrp_build}.zip",
 				$epicmag_cstrp_dir,
