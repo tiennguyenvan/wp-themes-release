@@ -9,3 +9,4 @@ if (is_admin()) {
     // don't rename the 'sneeit-core-required-plugins' as it the page slug to enqueue folder name in apps
 	require_once 'build/applications/sneeit-core-required-plugins/server/index.php';
 }
+

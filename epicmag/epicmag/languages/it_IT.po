@@ -1,0 +1,67 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# Sneeit.com <contact@sneeit.com>, 2023.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-11-01 14:42+0700\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Sneeit.com <contact@sneeit.com>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+#, formato php
+msgid "\"%s\" has invalid file"
+msgstr "\"%s\" ha un file non valido"
+#, formato php
+msgid "\"%s\" has invalid slug"
+msgstr "\"%s\" ha uno slug non valido"
+#, formato php
+msgid "%s requires following plugins to work: "
+msgstr "%s richiede i seguenti plugin per funzionare: "
+#, formato php
+msgid "Cannot active \"%1$s\": file %2$s %3$s"
+msgstr "Impossibile attivare \"%1$s\": file %2$s %3$s"
+#, formato php
+msgid "Cannot create folder of %s"
+msgstr "Impossibile creare la cartella di %s"
+#, formato php
+msgid "Cannot install \"%1$s\": %2$s"
+msgstr "Impossibile installare \"%1$s\": %2$s"
+#, formato php
+msgid "Cannot unzip \"%1$s\": %2$s"
+msgstr "Impossibile decomprimere \"%1$s\": %2$s"
+msgid "Install Required Plugins"
+msgstr "Installa i plugin richiesti"
+#, formato php
+msgid "Missing required field: %s"
+msgstr "Campo obbligatorio mancante: %s"
+#, formato php
+msgid "Missing required plugins for %s theme"
+msgstr "Plugin richiesti mancanti per il tema %s"
+msgid "Please Install Required Plugins"
+msgstr "Installa i plugin richiesti"
+msgid "Redirecting ..."
+msgstr "Reindirizzamento..."
+msgid "Required Plugins"
+msgstr "Plugin richiesti"
+msgid "Required Plugins for "
+msgstr "Plugin richiesti per"
+msgid "Timeout! Please reload the page."
+msgstr "Timeout! Ricarica la pagina."
+msgid "WordPress Server Error"
+msgstr "Errore del server WordPress"
+msgid "empty nonce"
+msgstr "nonce vuoto"
+msgid_99yz_25yzCannot_99yzdownload_99yz_22yz_25yz_06yz1_05yzs_22yz_25yz_23yz_99yz_06yz2_05yzs_25yz
+msgstr "Cannot download \"%1$s\": %2$s"
+msgid_99yz_25yzCannot_99yzupload_99yz_06yzs_25yz
+msgstr "Cannot upload %s"
+msgid_99yz_25yzFinished_25yz
+msgstr "Finished"
