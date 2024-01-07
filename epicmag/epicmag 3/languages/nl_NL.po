@@ -1,0 +1,65 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# Sneeit.com <contact@sneeit.com>, 2023.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-11-01 14:42+0700\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Sneeit.com <contact@sneeit.com>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+#, php-formaat
+msgid "\"%s\" has invalid file"
+msgstr "\"%s\" heeft een ongeldig bestand"
+#, php-formaat
+msgid "\"%s\" has invalid slug"
+msgstr "\"%s\" heeft ongeldige slug"
+#, php-formaat
+msgid "Cannot active \"%1$s\": file %2$s %3$s"
+msgstr "Kan \"%1$s\" niet activeren: bestand %2$s %3$s"
+#, php-formaat
+msgid "Cannot create folder of %s"
+msgstr "Kan map van %s niet aanmaken"
+#, php-formaat
+msgid "Cannot unzip \"%1$s\": %2$s"
+msgstr "Kan \"%1$s\": %2$s niet uitpakken"
+msgid "Finished"
+msgstr "Voltooid"
+msgid "Install Required Plugins"
+msgstr "Vereiste plug-ins installeren"
+#, php-formaat
+msgid "Missing required field: %s"
+msgstr "Ontbrekend verplicht veld: %s"
+#, php-formaat
+msgid "Missing required plugins for %s theme"
+msgstr "Vereiste plug-ins ontbreken voor %s thema"
+msgid "Please Install Required Plugins"
+msgstr "Installeer de vereiste plug-ins"
+msgid "Redirecting ..."
+msgstr "Omleiden..."
+msgid "Required Plugins"
+msgstr "Vereiste plug-ins"
+msgid "Required Plugins for "
+msgstr "Vereiste plug-ins voor "
+msgid "Timeout! Please reload the page."
+msgstr "Time-out! Laad de pagina opnieuw."
+msgid "WordPress Server Error"
+msgstr "WordPress-serverfout"
+msgid "empty nonce"
+msgstr "lege nonce"
+msgid "%s requires following plugins to work: "
+msgstr "%s vereist de volgende plug-ins om te werken: "
+msgid "Cannot download \"%1$s\": %2$s"
+msgstr "Kan \"%1$s\" niet downloaden: %2$s"
+msgid "Cannot install \"%1$s\": %2$s"
+msgstr "Kan \"%1$s\" niet installeren: %2$s"
+msgid "Cannot upload %s"
+msgstr "Kan %s niet uploaden"

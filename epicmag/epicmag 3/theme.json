@@ -1,0 +1,33 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/theme.json",
+	"version": 2,
+	"settings": {		
+		"spacing": {
+			"blockGap": null,
+			"margin": false,
+			"padding": false
+		},
+		"appearanceTools": true,
+		"color": {
+			"custom": true,
+			"defaultPalette": false
+		}
+	},
+	"templateParts": [
+		{
+			"area": "header",
+			"name": "header",
+			"title": "Header"
+		},
+		{
+			"area": "footer",
+			"name": "footer",
+			"title": "Footer"
+		},
+		{
+			"area": "uncategorized",
+			"name": "comments",
+			"title": "Comments"
+		}
+	]
+}
