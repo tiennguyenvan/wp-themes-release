@@ -3,9 +3,9 @@
 	"version": 3,
 	"settings": {		
 		"spacing": {
-			"blockGap": null,
-			"margin": false,
-			"padding": false
+			"blockGap": true,
+			"margin": true,
+			"padding": true
 		},
 		"appearanceTools": true,
 		"color": {
