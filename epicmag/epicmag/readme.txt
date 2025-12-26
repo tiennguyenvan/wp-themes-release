@@ -1,7 +1,7 @@
 === EpicMag ===
 Contributors: sneeit.com
 Requires at least: 6.1
-Tested up to: 6.1
+Tested up to: 6.9
 Requires PHP: 5.6
 Stable tag: 23.09.05
 License: GPLv2 or later

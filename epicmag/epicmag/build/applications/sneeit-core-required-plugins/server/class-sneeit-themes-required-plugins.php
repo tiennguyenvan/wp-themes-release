@@ -1,433 +1,477 @@
 <?php
-/**
- * DragBlock's Sneeit-core-required-plugins.
- *
- * @package Class sneeit themes required plugins
- */
-
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
 require_once ABSPATH . 'wp-admin/includes/plugin.php';
-// dev-reply#244.
-if( ! class_exists( 'Sneeit_Themes_Required_Plugins' ) ) {
-/**
-	 * Check class-def#245
-	 */
-	class Sneeit_Themes_Required_Plugins {
+
+// delete_site_transient('update_plugins');
+if (!class_exists('Sneeit_Themes_Required_Plugins')) {
+	class Sneeit_Themes_Required_Plugins
+	{
 		public $remain = array();
 		public $checker = 'sneeit_update_checker';
+
+		/**
+		Don't change this slug
+		It should match the slug of sneeit-core plugin
+		 */
 		public $admin_slug = 'sneeit-core';
 		public $admin_redirect = 'sneeit-core-import';
 		public $admin_redirect_activate = 'sneeit-core-activate';
 		public $admin_redirect_import = 'sneeit-core-import';
+
+		/**
+		Don't change this slug
+		It should match with the folder name in the build directory
+		 */
 		public $sub_slug = 'sneeit-core-required-plugins';
 		public $ajax_slug = '';
 		public $theme_name = '';
-		/**
-		 * Check Documentation#2416
-		 *
-		 * @param object|array|string $epicmag_cstrp_checker check var-def#2416.
-		 */
-		private function epicmag_cstrp_remain( $epicmag_cstrp_checker ) {
-			// dev-reply#2429.
-			return strtolower( str_replace( [' '], '-', trim( $epicmag_cstrp_checker ) ) );
+
+		private function normalize_plugin_slug($slug) {
+			//return strtolower(str_replace([' ', '-', '_'], '', $slug));
+			return strtolower(str_replace([' '], '-', trim($slug)));
 		}
 		/**
-		 * Check Documentation#2420
+		 * 
 		 */
-		public function __construct() {
-			// dev-reply#2437.
-			$epicmag_cstrp_admin = explode( ', ', EPICMAG_REQUIRED_PLUGINS );
-			foreach ( $epicmag_cstrp_admin as $epicmag_cstrp_slug ) {
-				$this->remain[ $this->epicmag_cstrp_remain( $epicmag_cstrp_slug ) ] = ''; // dev-reply#2440.
+		public function __construct()
+		{
+			// parse required plugins
+			$items = explode(', ', EPICMAG_REQUIRED_PLUGINS);
+			foreach ($items as $item) {
+				$this->remain[$this->normalize_plugin_slug($item)] = ''; // Create an entry in the associative array with an empty value
 			}
-			$epicmag_cstrp_redirect = get_plugins();
-			$epicmag_cstrp_activate = get_site_option( 'active_sitewide_plugins' ) ?: [];
-			$epicmag_cstrp_import = get_option( 'active_plugins' ) ?: [];
-			$epicmag_cstrp_sub = array_merge( array_keys( $epicmag_cstrp_activate ), $epicmag_cstrp_import );
-			foreach ( $epicmag_cstrp_sub as $epicmag_cstrp_ajax ) {
-				if ( isset( $epicmag_cstrp_redirect[ $epicmag_cstrp_ajax ] ) ) {
-					$epicmag_cstrp_theme = $epicmag_cstrp_redirect[ $epicmag_cstrp_ajax ];
-					// dev-reply#2455.
-					$epicmag_cstrp_checker = $this->epicmag_cstrp_remain( dirname( $epicmag_cstrp_ajax ) );
-					unset( $this->remain[ $epicmag_cstrp_checker ] );
-					// dev-reply#2460.
-					if ( ! empty( $epicmag_cstrp_theme['TextDomain'] ) ) {
-						$epicmag_cstrp_name = $this->epicmag_cstrp_remain( $epicmag_cstrp_theme['TextDomain'] );
-						unset( $this->remain[ $epicmag_cstrp_name ] );
+
+			// get all installed plugins with headers
+			$all_plugins = get_plugins();
+
+			// get active plugins (site + network)
+			$network_activated = get_site_option('active_sitewide_plugins') ?: [];
+			$site_activated    = get_option('active_plugins') ?: [];
+			$active_plugins    = array_merge(array_keys($network_activated), $site_activated);			
+
+			foreach ($active_plugins as $plugin_file) {
+				if (isset($all_plugins[$plugin_file])) {
+					$plugin_data = $all_plugins[$plugin_file];					
+
+					// check against folder slug
+					$slug = $this->normalize_plugin_slug(dirname($plugin_file));
+
+					unset($this->remain[$slug]);
+
+					// check against text domain
+					if (!empty($plugin_data['TextDomain'])) {
+						$text_domain = $this->normalize_plugin_slug($plugin_data['TextDomain']);
+						unset($this->remain[$text_domain]);
 					}
 				}
 			}
-			// dev-reply#2470.
-			if ( count( $this->remain ) === 0 ) {
+
+
+
+			// all required plugins have been installed
+			// @todo: compare the versions and provide updates
+			if (count($this->remain) === 0) {
 				return;
 			}
-			// dev-reply#2476.
-			$epicmag_cstrp_normalize = wp_get_theme();
-			$epicmag_cstrp_plugin = $epicmag_cstrp_normalize->get( 'UpdateURI' );
-			// dev-reply#2479.
-			$epicmag_cstrp_items = ( ! ( empty( $epicmag_cstrp_plugin ) || 'https://sneeit.com/free' === $epicmag_cstrp_plugin ) ) && 'https://sneeit.com/' === $epicmag_cstrp_plugin;
-			if ( $epicmag_cstrp_items ) {
+
+			// did not install sneeit core
+			$theme = wp_get_theme();
+			$theme_update_uri = $theme->get('UpdateURI');
+			// prioritizing free for themes without update URI or themes with sneeit.com/free
+			// then themes with update URI different than sneeit.com
+			$requires_sneeit_license = (!(empty($theme_update_uri) ||  'https://sneeit.com/free' === $theme_update_uri)) && 'https://sneeit.com/' === $theme_update_uri;
+			if ($requires_sneeit_license) {
 				$this->admin_redirect = $this->admin_redirect_activate;
 			} else {
 				$this->admin_redirect = $this->admin_redirect_import;
 			}
-			// dev-reply#2488.
-			add_action( 'admin_menu', array( $this, 'admin_menu' ) );
-			add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
-			add_action( 'admin_notices', array( $this, 'admin_notices' ), 1 );
-			add_action( 'switch_theme', array( $this, 'refresh_plugin_update_checker' ), 1 );
-			add_action( 'activated_plugin', array( $this, 'refresh_theme_update_checker' ), 1 );
-			add_action( 'deactivated_plugin', array( $this, 'refresh_theme_update_checker' ), 1 );
-			add_action( 'deactivated_plugin', array( $this, 'refresh_theme_update_checker' ), 1 );
-			add_action( 'admin_footer', array( $this, 'refresh_update_checker' ), 1 );
-			add_action( 'after_setup_theme', array( $this, 'load_languages' ), 1 );
-			// dev-reply#24102.
-			$this->ajax_slug = str_replace( '-', '_', $this->sub_slug );
-			add_action( 'wp_ajax_nopriv_' . $this->sub_slug, array( $this, 'installer' ) );
-			add_action( 'wp_ajax_' . $this->sub_slug, array( $this, 'installer' ) );
+
+			// otherwise, create install page
+			add_action('admin_menu', array($this, 'admin_menu'));
+			add_action('admin_enqueue_scripts', array($this, 'admin_enqueue_scripts'));
+			add_action('admin_notices', array($this, 'admin_notices'), 1);
+			add_action('switch_theme', array($this, 'refresh_plugin_update_checker'), 1);
+			add_action('activated_plugin', array($this, 'refresh_theme_update_checker'), 1);
+			add_action('deactivated_plugin', array($this, 'refresh_theme_update_checker'), 1);
+			add_action('deactivated_plugin', array($this, 'refresh_theme_update_checker'), 1);
+			add_action('admin_footer', array($this, 'refresh_update_checker'), 1);
+			add_action('after_setup_theme', array($this, 'load_languages'), 1);
+
+
+
+
+			// refresh checker regularly updates
+
+			// add_action('update_themes_sneeit.com', array($this, 'update_themes'), 10, 4);
+			// add_action('update_plugins_sneeit.com', array($this, 'update_plugins'), 10, 4);
+
+
+			$this->ajax_slug = str_replace('-', '_', $this->sub_slug);
+			add_action('wp_ajax_nopriv_' . $this->sub_slug, array($this, 'installer'));
+			add_action('wp_ajax_' . $this->sub_slug, array($this, 'installer'));
 		}
-		/**
-		 * Check Documentation#2473
-		 */
-		public function load_languages() {
-			// dev-reply#24115.
-			load_theme_textdomain( 'epicmag', get_template_directory() . '/languages' );
+		public function load_languages()
+		{
+
+			// Load the theme's text domain
+			load_theme_textdomain('epicmag', get_template_directory() . '/languages');
 		}
+
+
 		/**
-		 * Check Documentation#2478
+		 * When switch theme, delete plugin checker
+		 * when update plugin, delete theme checker
+		 * this is to prevent conflict when updating plugin or theme
 		 */
-		public function refresh_theme_update_checker() {
-			delete_site_transient( 'update_plugins' );
-			delete_transient( 'update_plugins' );
+		public function refresh_theme_update_checker()
+		{
+			delete_site_transient('update_plugins');
+			delete_transient('update_plugins');
 		}
-		/**
-		 * Check Documentation#2483
-		 */
-		public function refresh_plugin_update_checker() {
-			delete_site_transient( 'update_plugins' );
-			delete_transient( 'update_plugins' );
+		public function refresh_plugin_update_checker()
+		{
+			delete_site_transient('update_plugins');
+			delete_transient('update_plugins');
 		}
-		/**
-		 * Check Documentation#2488
-		 */
-		public function refresh_update_checker() {
-			if ( empty( get_transient( $this->checker ) ) ) {
-				delete_site_transient( 'update_plugins' );
-				delete_transient( 'update_plugins' );
-				delete_site_transient( 'update_plugins' );
-				delete_transient( 'update_plugins' );
-				set_transient( $this->checker, true, 60 * 60 * 24 ); // dev-reply#24142.
+		public function refresh_update_checker()
+		{
+			if (empty(get_transient($this->checker))) {
+				delete_site_transient('update_plugins');
+				delete_transient('update_plugins');
+				delete_site_transient('update_plugins');
+				delete_transient('update_plugins');
+				set_transient($this->checker, true, 60 * 60 * 24); // refresh every day
 			}
 		}
+
+
+
 		/**
-		 * Check Documentation#2498
+		 * 
 		 */
-		public function admin_menu() {
-			// dev-reply#24153.
-			if ( empty( $GLOBALS['admin_page_hooks'][ $this->admin_slug ] ) ) {
-				// dev-reply#24155.
+		public function admin_menu()
+		{
+			// register admin menu if did not
+			if (empty($GLOBALS['admin_page_hooks'][$this->admin_slug])) {
+				// Add the main menu page								
 				add_menu_page(
-					'Sneeit Core', // dev-reply#24157.
-					'Sneeit Core', // dev-reply#24158.
-					'manage_options', // dev-reply#24159.
-					$this->admin_slug, // dev-reply#24160.
-					array( $this, 'add_submenu_page' ), // dev-reply#24161.
-					get_template_directory_uri() . '/assets/images/sneeit-logo-16.png', // dev-reply#24162.
-					6 // dev-reply#24163.
+					'Sneeit Core', // page title
+					'Sneeit Core', // menu title
+					'manage_options', // capabilities
+					$this->admin_slug, // menu slug
+					array($this, 'add_submenu_page'), // render function
+					get_template_directory_uri() . '/assets/images/sneeit-logo-16.png', // icon
+					6 // position
 				);
 			}
+
 			global $menu;
-			foreach ( $menu as $epicmag_cstrp_item => $epicmag_cstrp_this ) {
-				if ( ! empty( $epicmag_cstrp_this[2] ) && $epicmag_cstrp_this[2] === $this->admin_slug ) {
-					$menu[ $epicmag_cstrp_item ][0] .= ' <span class="awaiting-mod">' . count( $this->remain ) . '</span>';
+
+			foreach ($menu as $key => $value) {
+				if (!empty($value[2]) && $value[2] === $this->admin_slug) {
+					$menu[$key][0] .= ' <span class="awaiting-mod">' . count($this->remain) . '</span>';
 					break;
 				}
 			}
-			// dev-reply#24176.
-			$epicmag_cstrp_all = wp_get_theme();
-			$this->theme_name = $epicmag_cstrp_all->get( 'Name' );
+
+			// register sub menu for the plugin install page						
+			$current_theme = wp_get_theme();
+			$this->theme_name = $current_theme->get('Name');
+
 			add_submenu_page(
-				$this->admin_slug, // dev-reply#24181.
-				$this->admin_slug, // dev-reply#24182.
-				$this->theme_name . ' ' . 'Plugins' . ' <span class="awaiting-mod">' . count( $this->remain ) . '</span>', // dev-reply#24183.
-				'manage_options', // dev-reply#24184.
-				$this->sub_slug, // dev-reply#24185.
-				array( $this, 'add_submenu_page' ) // dev-reply#24186.
+				$this->admin_slug, // parent slug
+				$this->admin_slug, // page title 
+				$this->theme_name . ' ' . 'Plugins' . ' <span class="awaiting-mod">' . count($this->remain) . '</span>', // menu title
+				'manage_options', // capabilities
+				$this->sub_slug, // menu slug,
+				array($this, 'add_submenu_page') // render function
 			);
-			remove_submenu_page( $this->admin_slug, $this->admin_slug );
+
+			// Remove the auto-generated submenu
+			remove_submenu_page($this->admin_slug, $this->admin_slug);
 		}
+
 		/**
-		 * Check Documentation#24133
+		 * 
 		 */
-		public function add_submenu_page() {
-			echo '<div class="app ' . esc_attr( $this->sub_slug ) . '"></div>';
+		public function add_submenu_page()
+		{
+			echo '<div class="app ' . esc_attr($this->sub_slug) . '"></div>';
 		}
+
 		/**
-		 * Check Documentation#24137
+		 * Show required plugins
 		 */
-		public function admin_notices() {
-			if ( ! empty( $_GET['page'] ) ) {
-				$epicmag_cstrp_plugins = sanitize_text_field( wp_unslash( $_GET['page'] ) );
-				// dev-reply#24208.
-				if ( ( $epicmag_cstrp_plugins ) === $this->sub_slug ) {
+		public function admin_notices()
+		{
+			if (!empty($_GET['page'])) {
+				$page = sanitize_text_field(wp_unslash($_GET['page']));
+				// don't need to notice in our own app
+				if ($page === $this->sub_slug) {
 					return;
 				}
 			}
-			$epicmag_cstrp_network = array_keys( $this->remain );
-			$epicmag_cstrp_activated = array_map( 'ucfirst', $epicmag_cstrp_network );
-			$epicmag_cstrp_site = implode( ', ', $epicmag_cstrp_activated );
+
+
+			$keys = array_keys($this->remain);
+			$capitalized_keys = array_map('ucfirst', $keys);
+			$imploded_keys = implode(', ', $capitalized_keys);
 			echo '<section><div class="notice notice-large notice-warning is-dismissible">';
 			echo '<h2 class="notice-title">';
-			/* translators: see trans-note#24151 */
-			echo sprintf( esc_html__( 'Missing required plugins for %s theme', 'epicmag' ), esc_html( $this->theme_name ) );
+			echo sprintf(__('Missing required plugins for %s theme', 'epicmag'), esc_html($this->theme_name));
 			echo '</h2>';
 			echo '<p>';
-			/* translators: see trans-note#24154 */
-			echo sprintf( esc_html__( '%s requires following plugins to work: ', 'epicmag' ), esc_html( $this->theme_name ) ) . '<strong>' . esc_html( $epicmag_cstrp_site ) . '</strong>';
+			echo sprintf(__('%s requires following plugins to work: ', 'epicmag'), esc_html($this->theme_name)) . '<strong>' . esc_html($imploded_keys) . '</strong>';
 			echo '</p>';
 			echo '<p>';
-			echo '<a class="button button-large button-warning" href="' . esc_attr( menu_page_url( esc_attr( $this->sub_slug ), false ) ) . '">';
-			echo esc_html__( 'Please Install Required Plugins', 'epicmag' );
+			echo '<a class="button button-large button-warning" href="' . esc_attr(menu_page_url(esc_attr($this->sub_slug), false)) . '">';
+			echo __('Please Install Required Plugins', 'epicmag');
 			echo '</a>';
 			echo '</p>';
 			echo '</div></section>';
 		}
+
+
 		/**
-		 * Check Documentation#24163
+		 * then register the plugin page
 		 */
-		public function admin_enqueue_scripts() {
-			// dev-reply#24239.
-			$epicmag_cstrp_active = get_template_directory_uri();
-			$epicmag_cstrp_file = '/build/applications/';
-			if ( empty( $_GET['page'] ) ) {
-				wp_enqueue_style( $this->sub_slug, $epicmag_cstrp_active . $epicmag_cstrp_file . $this->sub_slug . '/client/index.css', null, time() );
+		public function admin_enqueue_scripts()
+		{
+			// register sub menu for the plugin install page									
+			$theme_url = get_template_directory_uri();
+			$build_dir = '/build/applications/';
+
+
+			if (empty($_GET['page'])) {
+				wp_enqueue_style($this->sub_slug, $theme_url . $build_dir . $this->sub_slug . '/client/index.css', null, time());
 				return;
 			}
-			// dev-reply#24248.
-			$epicmag_cstrp_plugins = sanitize_text_field( wp_unslash( $_GET['page'] ) );
-			if ( ( $epicmag_cstrp_plugins ) !== $this->sub_slug ) {
-				wp_enqueue_style( $this->sub_slug, $epicmag_cstrp_active . $epicmag_cstrp_file . $this->sub_slug . '/client/index.css', null, time() );
+			// only enqueue for our own app
+			$page = sanitize_text_field(wp_unslash($_GET['page']));
+			if ($page !== $this->sub_slug) {
+				wp_enqueue_style($this->sub_slug, $theme_url . $build_dir . $this->sub_slug . '/client/index.css', null, time());
 				return;
 			}
-			// dev-reply#24257.
-			$epicmag_cstrp_data = get_template_directory() . $epicmag_cstrp_file . $this->sub_slug . '/client/index.asset.php';
-			if ( ! file_exists( $epicmag_cstrp_data ) ) {
+
+
+
+			// enqueue dependencies
+			$asset_path = get_template_directory() . $build_dir . $this->sub_slug . '/client/index.asset.php';
+			if (!file_exists($asset_path)) {
 				return;
 			}
-			// dev-reply#24262.
-			$epicmag_cstrp_text = include $epicmag_cstrp_data;
-			// dev-reply#24266.
-			wp_enqueue_style( $this->sub_slug, $epicmag_cstrp_active . $epicmag_cstrp_file . $this->sub_slug . '/client/style-index.css', null, time() );
-			// dev-reply#24269.
-			array_push( $epicmag_cstrp_text['dependencies'], 'wp-i18n', 'jquery' );
-			wp_enqueue_script( $this->sub_slug, $epicmag_cstrp_active . $epicmag_cstrp_file . $this->sub_slug . '/client/index.js', $epicmag_cstrp_text['dependencies'], time(), true );
-			wp_localize_script( $this->sub_slug, 'sneeitCoreRequiredPlugins', array(
-				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-				'sneeitCoreUrl' => admin_url( 'admin.php?page=' . $this->admin_redirect ),
-				'nonce'   => wp_create_nonce( $this->sub_slug ),
-				// dev-reply#24276.
+			// Load the required WordPress packages.
+			// Automatically load imported dependencies and assets version.
+			$asset_file = include $asset_path;
+
+			// Enqueue STYLES						
+			wp_enqueue_style($this->sub_slug, $theme_url . $build_dir . $this->sub_slug . '/client/style-index.css', null, time());
+
+			// Enqueue SCRIPT		
+			array_push($asset_file['dependencies'], 'wp-i18n', 'jquery');
+			wp_enqueue_script($this->sub_slug, $theme_url . $build_dir . $this->sub_slug . '/client/index.js', $asset_file['dependencies'], time(), true);
+			wp_localize_script($this->sub_slug, 'sneeitCoreRequiredPlugins', array(
+				'ajaxUrl' => admin_url('admin-ajax.php'),
+				'sneeitCoreUrl' => admin_url('admin.php?page=' . $this->admin_redirect),
+				'nonce'   => wp_create_nonce($this->sub_slug),
+				// 'screenshot' => get_template_directory_uri() . '/screenshot.png',
 				'screenshot' => get_template_directory_uri() . '/assets/images/plugin-screenshot.png',
 				'text' => array(
-					'finished' => esc_html__( 'Finished', 'epicmag' ),
-					'title' => esc_html__( 'Required Plugins for ', 'epicmag' ) . $this->theme_name,
-					'button' => esc_html__( 'Install Required Plugins', 'epicmag' ),
-					'redirecting' => esc_html__( 'Redirecting ...', 'epicmag' ),
-					'error' => esc_html__( 'WordPress Server Error', 'epicmag' ),
-					'label' => esc_html__( 'Required Plugins', 'epicmag' )
+					'finished' => __('Finished', 'epicmag'),
+					'title' => __('Required Plugins for ', 'epicmag') .  $this->theme_name,
+					'button' => __('Install Required Plugins', 'epicmag'),
+					'redirecting' => __('Redirecting ...', 'epicmag'),
+					'error' => __('WordPress Server Error', 'epicmag'),
+					'label' => __('Required Plugins', 'epicmag')
 				),
-				'plugins' => $this->remain,
-			) );
+				'plugins' => $this->remain
+			));
 		}
-		// dev-reply#24290.
-		/**
-		 * Check Documentation#24208
-		 *
-		 * @param object|array|string $epicmag_cstrp_domain check var-def#24208.
-		 */
-		public function ajax_error_die( $epicmag_cstrp_domain ) {
-			echo json_encode( array( 'error' => $epicmag_cstrp_domain ) );
+
+		// and process what the app sends
+		public function ajax_error_die($text)
+		{
+			echo json_encode(array('error' => $text));
 			die();
 		}
-		/**
-		 * Check Documentation#24213
-		 *
-		 * @param object|array|string $epicmag_cstrp_domain check var-def#24213.
-		 */
-		public function ajax_finished_die( $epicmag_cstrp_domain ) {
-			echo json_encode( $epicmag_cstrp_domain );
+		public function ajax_finished_die($text)
+		{
+			echo json_encode($text);
 			die();
 		}
-		/**
-		 * Check Documentation#24218
-		 *
-		 * @param object|array|string $epicmag_cstrp_update check var-def#24218.
-		 */
-		public function ajax_request_verify_die( $epicmag_cstrp_update = array() ) {
-			if ( empty( $_POST['nonce'] ) ) {
-				$this->ajax_error_die( esc_html__( 'empty nonce', 'epicmag' ) );
+
+		public function ajax_request_verify_die($fields = array())
+		{
+			if (empty($_POST['nonce'])) {
+				$this->ajax_error_die(__('empty nonce', 'epicmag'));
 			}
-			if ( ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['nonce'] ) ), $this->sub_slug ) ) {
-				$this->ajax_error_die( esc_html__( 'Timeout! Please reload the page.', 'epicmag' ) );
+			if (!wp_verify_nonce(sanitize_key(wp_unslash($_POST['nonce'])), $this->sub_slug)) {
+				$this->ajax_error_die(__('Timeout! Please reload the page.', 'epicmag'));
 			}
-			if ( is_string( $epicmag_cstrp_update ) ) {
-				$epicmag_cstrp_update = explode( ',', $epicmag_cstrp_update );
+			if (is_string($fields)) {
+				$fields = explode(',', $fields);
 			}
-			if ( ! empty( $epicmag_cstrp_update ) ) {
-				foreach ( $epicmag_cstrp_update as $epicmag_cstrp_uri ) {
-					$epicmag_cstrp_uri = trim( $epicmag_cstrp_uri );
-					if ( ! isset( $_POST[ $epicmag_cstrp_uri ] ) ) {
-						/* translators: see trans-note#24233 */
-						$this->ajax_error_die( sprintf( esc_html__( 'Missing required field: %s', 'epicmag' ), $epicmag_cstrp_uri ) );
+
+			if (!empty($fields)) {
+				foreach ($fields as $field) {
+					$field = trim($field);
+					if (!isset($_POST[$field])) {
+						$this->ajax_error_die(sprintf(__('Missing required field: %s', 'epicmag'), $field));
 					}
 				}
 			}
 		}
-		/**
-		 * Check Documentation#24238
-		 *
-		 * @param object|array|string $epicmag_cstrp_checker check var-def#24238.
-		 */
-		public function plugin_install_file( $epicmag_cstrp_checker ) {
-			// dev-reply#24326.
-			$epicmag_cstrp_requires = WP_PLUGIN_DIR . '/' . $epicmag_cstrp_checker . '/';
-			if ( file_exists( $epicmag_cstrp_requires . $epicmag_cstrp_checker . '.php' ) ) {
-				$epicmag_cstrp_sneeit = file_get_contents( $epicmag_cstrp_requires . $epicmag_cstrp_checker . '.php' );
-				if ( $epicmag_cstrp_sneeit && strpos( $epicmag_cstrp_sneeit, 'Plugin Name:' ) !== false ) {
-					return $epicmag_cstrp_requires . $epicmag_cstrp_checker . '.php';
+
+		public function plugin_install_file($slug)
+		{
+			// check if have the exact file
+			$plugin_path = WP_PLUGIN_DIR . '/' . $slug . '/';
+			if (file_exists($plugin_path . $slug . '.php')) {
+				$file_content = file_get_contents($plugin_path . $slug . '.php');
+				if ($file_content && strpos($file_content, 'Plugin Name:') !== false) {
+					return $plugin_path . $slug . '.php';
 				}
 			}
-			// dev-reply#24335.
-			$epicmag_cstrp_license = glob( WP_PLUGIN_DIR . '/' . $epicmag_cstrp_checker . '/*.php' );
-			foreach ( $epicmag_cstrp_license as $epicmag_cstrp_globals ) {
-				$epicmag_cstrp_sneeit = file_get_contents( $epicmag_cstrp_globals );
-				if ( $epicmag_cstrp_sneeit && strpos( $epicmag_cstrp_sneeit, 'Plugin Name:' ) !== false ) {
-					return $epicmag_cstrp_globals;
+
+			// scan all other files to find the plugin install file
+			$file_paths = glob(WP_PLUGIN_DIR . '/' . $slug . '/*.php');
+			foreach ($file_paths as $file_path) {
+				$file_content = file_get_contents($file_path);
+				if ($file_content && strpos($file_content, 'Plugin Name:') !== false) {
+					return $file_path;
 				}
 			}
+
 			return '';
 		}
-		/**
-		 * Check Documentation#24258
-		 *
-		 * @param object|array|string $epicmag_cstrp_checker check var-def#24258.
-		 */
-		public function activate_plugin( $epicmag_cstrp_checker ) {
-			$epicmag_cstrp_ajax = $this->plugin_install_file( $epicmag_cstrp_checker );
-			if ( ! $epicmag_cstrp_ajax ) {
-				/* translators: see trans-note#24262 */
-				return new WP_Error( 'epicmag-plugin-installer', sprintf( esc_html__( '"%s" has invalid file', 'epicmag' ), $epicmag_cstrp_checker ) );
+		public function activate_plugin($slug)
+		{
+			$plugin_file = $this->plugin_install_file($slug);
+			if (!$plugin_file) {
+				return new WP_Error('epicmag-plugin-installer', sprintf(__('"%s" has invalid file', 'epicmag'), $slug));
 			}
-			// dev-reply#24353.
-			wp_cache_delete( 'plugins', 'plugins' );
-			$epicmag_cstrp_menu = activate_plugin( $epicmag_cstrp_ajax );
-			if ( is_wp_error( $epicmag_cstrp_menu ) ) {
-				/* translators: see trans-note#24268 */
-				return new WP_Error( 'epicmag-plugin-installer', sprintf( esc_html__( 'Cannot active "%1$s": file %2$s %3$s', 'epicmag' ), $epicmag_cstrp_checker, $epicmag_cstrp_ajax, $epicmag_cstrp_menu->get_error_message() ) );
+
+			// clear cache so they have to scan all plugin data again
+			// before activating a plugin,
+			// this is to avoid the case when a plugin is already loaded
+			// into the plugin folder but it is not in the cache
+			wp_cache_delete('plugins', 'plugins');
+
+			$active = activate_plugin($plugin_file);
+			if (is_wp_error($active)) {
+				return new WP_Error('epicmag-plugin-installer', sprintf(__('Cannot active "%1$s": file %2$s %3$s', 'epicmag'), $slug, $plugin_file, $active->get_error_message()));
 			}
 			return true;
 		}
-		/**
-		 * Check Documentation#24272
-		 *
-		 * @param object|array|string $epicmag_cstrp_key check var-def#24272.
-		 * @param object|array|string $epicmag_cstrp_checker check var-def#24272.
-		 */
-		public function unzip_activate_plugin( $epicmag_cstrp_key, $epicmag_cstrp_checker ) {
-			// dev-reply#24368.
+
+		public function unzip_activate_plugin($path, $slug)
+		{
+			// global $wp_filesystem;
+			// if (!$wp_filesystem) {
+			//     $this->ajax_error_die(__('Can not access file system', 'epicmag'));
+			// }
 			require_once ABSPATH . '/wp-admin/includes/file.php';
 			WP_Filesystem();
-			$epicmag_cstrp_value = unzip_file( $epicmag_cstrp_key, WP_PLUGIN_DIR );
-			if ( is_wp_error( $epicmag_cstrp_value ) ) {
-				/* translators: see trans-note#24279 */
-				return new WP_Error( 'epicmag-plugin-installer', sprintf( esc_html__( 'Cannot unzip "%1$s": %2$s', 'epicmag' ), $epicmag_cstrp_checker, $epicmag_cstrp_value->get_error_message() ) );
+			$unzip = unzip_file($path, WP_PLUGIN_DIR);
+			if (is_wp_error($unzip)) {
+				return new WP_Error('epicmag-plugin-installer', sprintf(__('Cannot unzip "%1$s": %2$s', 'epicmag'), $slug, $unzip->get_error_message()));
 			}
-			if ( ! is_dir( WP_PLUGIN_DIR . '/' . $epicmag_cstrp_checker ) ) {
-				/* translators: see trans-note#24282 */
-				return new WP_Error( 'epicmag-plugin-installer', sprintf( esc_html__( '"%s" has invalid slug', 'epicmag' ), $epicmag_cstrp_checker ) );
+			if (!is_dir(WP_PLUGIN_DIR . '/' . $slug)) {
+				return new WP_Error('epicmag-plugin-installer', sprintf(__('"%s" has invalid slug', 'epicmag'), $slug));
 			}
-			return $this->activate_plugin( $epicmag_cstrp_checker );
+			return $this->activate_plugin($slug);
 		}
-		/**
-		 * Check Documentation#24286
-		 *
-		 * @param object|array|string $epicmag_cstrp_current check var-def#24286.
-		 * @param object|array|string $epicmag_cstrp_key check var-def#24286.
-		 * @param object|array|string $epicmag_cstrp_checker check var-def#24286.
-		 */
-		public function download_unzip_activate_plugin( $epicmag_cstrp_current, $epicmag_cstrp_key, $epicmag_cstrp_checker ) {
-			$epicmag_cstrp_get = download_url( $epicmag_cstrp_current );
-			if ( is_wp_error( $epicmag_cstrp_get ) ) {
-				/* translators: see trans-note#24290 */
-				return new WP_Error( 'epicmag-plugin-installer', sprintf( esc_html__( 'Cannot download "%1$s": %2$s', 'epicmag' ), $epicmag_cstrp_current, $epicmag_cstrp_get->get_error_message() ) );
+
+		public function download_unzip_activate_plugin($url, $path, $slug)
+		{
+			$download = download_url($url);
+			if (is_wp_error($download)) {
+				return new WP_Error('epicmag-plugin-installer', sprintf(__('Cannot download "%1$s": %2$s', 'epicmag'), $url, $download->get_error_message()));
 			}
-			$epicmag_cstrp_page = dirname( $epicmag_cstrp_key );
-			// dev-reply#24392.
-			if ( ! is_dir( $epicmag_cstrp_page ) ) {
-				// dev-reply#24394.
-				if ( ! mkdir( $epicmag_cstrp_page, 0777 ) ) {
-					unlink( $epicmag_cstrp_get );
-					/* translators: see trans-note#24298 */
-					return new WP_Error( 'epicmag-plugin-installer', sprintf( esc_html__( 'Cannot create folder of %s', 'epicmag' ), $epicmag_cstrp_checker ) );
+			$dir = dirname($path);
+
+			// check if the dir exists
+			if (!is_dir($dir)) {
+				// if not, create the base folder
+				if (!mkdir($dir, 0777)) {
+					unlink($download);
+					return new WP_Error('epicmag-plugin-installer', sprintf(__('Cannot create folder of %s', 'epicmag'), $slug));
 				}
 			}
-			// dev-reply#24401.
-			if ( ! rename( $epicmag_cstrp_get, $epicmag_cstrp_key ) ) {
-				unlink( $epicmag_cstrp_get );
-				/* translators: see trans-note#24304 */
-				return new WP_Error( 'epicmag-plugin-installer', sprintf( esc_html__( 'Cannot upload %s', 'epicmag' ), $epicmag_cstrp_checker ) );
+
+			// if user want to import another demos
+			if (!rename($download, $path)) {
+				unlink($download);
+
+				return new WP_Error('epicmag-plugin-installer', sprintf(__('Cannot upload %s', 'epicmag'), $slug));
 			}
-			return $this->unzip_activate_plugin( $epicmag_cstrp_key, $epicmag_cstrp_checker );
+
+			return $this->unzip_activate_plugin($path, $slug);
 		}
-		/**
-		 * Check Documentation#24308
-		 */
-		public function installer() {
-			$this->ajax_request_verify_die( 'plugin' );
+
+		public function installer()
+		{
+			$this->ajax_request_verify_die('plugin');
 			require_once ABSPATH . 'wp-admin/includes/plugin.php';
-			$epicmag_cstrp_keys = sanitize_text_field( wp_unslash( $_POST['plugin'] ) );
-			if ( ! empty( $this->remain[ $epicmag_cstrp_keys ] ) ) {
-				$this->ajax_finished_die( 'installed' );
+
+			$plugin_slug = sanitize_text_field(wp_unslash($_POST['plugin']));
+
+			if (!empty($this->remain[$plugin_slug])) {
+				$this->ajax_finished_die('installed');
 			}
-			// dev-reply#24422.
+
+			// the plugin is already installed, so active it
 			if (
-				is_dir( WP_PLUGIN_DIR . '/' . $epicmag_cstrp_keys ) &&
-				// dev-reply#24425.
-				$this->plugin_install_file( $epicmag_cstrp_checker )
+				is_dir(WP_PLUGIN_DIR . '/' . $plugin_slug) &&
+				// force download and instal if there was a failed update
+				$this->plugin_install_file($slug)
 			) {
-				$epicmag_cstrp_menu = $this->activate_plugin( $epicmag_cstrp_keys );
-				if ( is_wp_error( $epicmag_cstrp_menu ) ) {
-					$this->ajax_error_die( 'error 1: ' . $epicmag_cstrp_menu->get_error_message() );
+
+				$active = $this->activate_plugin($plugin_slug);
+				if (is_wp_error($active)) {
+					$this->ajax_error_die('error 1: ' . $active->get_error_message());
 				}
-				$this->ajax_finished_die( 'installed' );
+				$this->ajax_finished_die('installed');
 			}
-			// dev-reply#24436.
-			$epicmag_cstrp_capitalized = get_template_directory() . '/plugins/' . $epicmag_cstrp_keys . '.zip';
-			$epicmag_cstrp_imploded = $this->download_unzip_activate_plugin(
-				"https://github.com/tiennguyenvan/wp-plugins-release/raw/main/{$epicmag_cstrp_keys}/{$epicmag_cstrp_keys}.zip",
-				$epicmag_cstrp_capitalized,
-				$epicmag_cstrp_keys
+
+			// try to get from the github first to have the latest version of the plugin	
+			$local = get_template_directory() . '/plugins/' . $plugin_slug . '.zip';
+			$github_install = $this->download_unzip_activate_plugin(
+				"https://github.com/tiennguyenvan/wp-plugins-release/raw/main/{$plugin_slug}/{$plugin_slug}.zip",
+				$local,
+				$plugin_slug
 			);
-			if ( ! is_wp_error( $epicmag_cstrp_imploded ) ) {
-				$this->ajax_finished_die( 'installed' );
+
+			if (!is_wp_error($github_install)) {
+				$this->ajax_finished_die('installed');
 			}
-			// dev-reply#24447.
-			if ( file_exists( $epicmag_cstrp_capitalized ) && ! is_wp_error( $this->unzip_activate_plugin( $epicmag_cstrp_capitalized, $epicmag_cstrp_keys ) ) ) {
-				$this->ajax_finished_die( 'installed' );
+			// $this->ajax_error_die($github_install->get_error_message());
+
+
+
+			// else {
+			// 	$this->ajax_error_die(sprintf(__('Cannot install from github "%1$s": %2$s', 'epicmag'), $plugin_slug, $github_install->get_error_message()));
+			// }						
+
+			// plugin is not available on github or installed failed
+			// and if local file is available then try to use our local script first			
+			if (file_exists($local) && !is_wp_error($this->unzip_activate_plugin($local, $plugin_slug))) {
+				$this->ajax_finished_die('installed');
 			}
-			// dev-reply#24461.
-			$epicmag_cstrp_url = $this->download_unzip_activate_plugin(
-				"https://downloads.wordpress.org/plugin/{$epicmag_cstrp_keys}.zip",
-				$epicmag_cstrp_capitalized,
-				$epicmag_cstrp_keys
+
+			// here, github file is not available and the local file is not exist
+			// try from wordpress repository
+			$wp_install = $this->download_unzip_activate_plugin(
+				"https://downloads.wordpress.org/plugin/{$plugin_slug}.zip",
+				$local,
+				$plugin_slug
 			);
-			if ( is_wp_error( $epicmag_cstrp_url ) ) {
-				/* translators: see trans-note#24349 */
-				$this->ajax_error_die( sprintf( esc_html__( 'Cannot install "%1$s": %2$s', 'epicmag' ), $epicmag_cstrp_keys, $epicmag_cstrp_url->get_error_message() ) );
+			if (is_wp_error($wp_install)) {
+				$this->ajax_error_die(sprintf(__('Cannot install "%1$s": %2$s', 'epicmag'), $plugin_slug, $wp_install->get_error_message()));
 			}
-			$this->ajax_finished_die( 'installed' );
+
+			$this->ajax_finished_die('installed');
 		}
 	}
 }
+
 new Sneeit_Themes_Required_Plugins();
